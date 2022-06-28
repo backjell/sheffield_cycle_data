@@ -1,6 +1,6 @@
 ---
 title: "TestCycleData2"
-output: md_document
+output: html_document
 date: '2022-06-24'
 ---
 
@@ -9,14 +9,20 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+library(remotes)
+library(rmarkdown)
+library(skimr)
+library(sf)
 library(pct)
 library(stats19)
 library(tidyverse)
 library(tmap)
+library(tmaptools)
+library(knitr)
 ```
 
 ```{r}
-tmap_mode("plot")
+tmap_mode("view")
 ```
 
 ```{r}
@@ -27,18 +33,22 @@ zones= get_pct_zones("south-yorkshire")
 ```{r results='asis'}
 View(cycle_trips)
 ```
-
+## Number of cycle trips made on the current road network
 ```{r}
 cycle_trips %>%
   select(bicycle) %>% 
   plot()
 ```
 
+##South Yorkshire Regions
+
 ```{r}
 zones %>% 
   select(lad_name) %>% 
   plot()
 ```
+
+## LSOA regions within Sheffield
 
 ```{r}
 zones_sheffield = zones%>% 
@@ -52,22 +62,31 @@ zones_sheffield2 = zones %>%
   filter(lad_name == "Sheffield")
 ```
 
+```{r}
+rnet_sheffield = cycle_trips[zones_sheffield2, ]
+```
+
+## Cycle trips in Sheffield
 
 ```{r}
-rnet_sheffield = cycle_trips[zones_sheffield2, ] %>%
+rnet_sheffield %>%
    select(bicycle) %>%
   plot(key.pos=1) 
 ```
 
+
+## Cycle trips under the gender equality scenario
+
 ```{r}
-rnet_sheffield = cycle_trips[zones_sheffield2, ] %>%
+rnet_sheffield %>%
   select(gendereq_slc) %>%
   plot(key.pos=1)
 ```
 
+## Cycle trips under the Dutch scenario
 
 ```{r}
-rnet_sheffield = cycle_trips[zones_sheffield2, ] %>%
+rnet_sheffield %>%
   select(dutch_slc) %>%
   plot(key.pos=1)
 ```
@@ -88,6 +107,7 @@ desire = get_pct_lines(region = "south-yorkshire")
 View(desire)
 ```
 
+## Desire lines for the Dutch scenario (whole of South Yorkshire)
 
 ```{r}
 plot(desire["dutch_slc"])
@@ -107,7 +127,69 @@ plot(desire_sheffield)
 View(desire_sheffield)
 ```
 
+## Cycle desire lines for Sheffield
+
 ```{r}
 plot(desire_sheffield["bicycle"], key.pos=1,)
+```
+
+## Current potential number of cycle journeys under the current scenario and current network
+
+```{r}
+rnet_sheffield %>%
+  tm_shape() +
+  tm_lines(col= "blueviolet", lwd = "bicycle", scale = 9)
+```
+```{r}
+tmap_mode("plot")
+```
+ 
+```{r}
+rnet_sheffield %>%
+  tm_shape() +
+  tm_lines(col= "red", lwd = "ebike_slc", scale = 9)
+```
+
+
+```{r}
+extra_tags= c("maxspeed", "bicycle", "bus")
+osm_data_region = osmextract::oe_get_network("south yorkshire", mode = "cycling", extra_tags = extra_tags)
+```
+```{r}
+osm_sheffield = osm_data_region[zones_sheffield2, ]
+```
+
+```{r}
+osm_sheffield %>%
+  sf::st_drop_geometry() %>%
+  skimr::skim()
+```
+
+```{r}
+osm_cycleways = osm_sheffield %>%
+  filter(highway == "cycleway")
+```
+
+```{r}
+qtm(osm_cycleways)
+```
+
+```{r}
+osm_speed = osm_sheffield %>%
+  select(maxspeed)
+```
+
+```{r}
+plot(osm_speed, key.pos = 1, lwd = "maxspeed",)
+```
+
+```{r}
+osm_sheffield %>%
+  tm_shape() +
+  tm_lines("maxspeed")
+```
+
+```{r}
+qtm(osm_speed)
 ```
 
