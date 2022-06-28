@@ -1,0 +1,117 @@
+---
+title: "TestCycleData"
+output: md_document
+date: '2022-06-23'
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(pct)
+library(stats19)
+library(tidyverse)
+library(tmap)
+```
+
+```{r}
+tmap_mode("plot")
+```
+
+```{r}
+cycle_trips = get_pct_rnet(region="south-yorkshire")
+zones= get_pct_zones("south-yorkshire")
+```
+
+```{r results='asis'}
+View(cycle_trips)
+```
+
+```{r}
+cycle_trips %>%
+  select(bicycle) %>% 
+  plot()
+```
+
+```{r}
+zones %>% 
+  select(lad_name) %>% 
+  plot()
+```
+
+```{r}
+zones_sheffield = zones%>% 
+  filter(lad_name == "Sheffield") %>%
+  select(lad11cd) %>%
+  plot(color = "deepskyblue", fill= NA, main= "Sheffield")
+```
+
+```{r}
+zones_sheffield2 = zones %>% 
+  filter(lad_name == "Sheffield")
+```
+
+
+```{r}
+rnet_sheffield = cycle_trips[zones_sheffield2, ] %>%
+   select(bicycle) %>%
+  plot(key.pos=1) 
+```
+
+```{r}
+rnet_sheffield = cycle_trips[zones_sheffield2, ] %>%
+  select(gendereq_slc) %>%
+  plot(key.pos=1)
+```
+
+
+```{r}
+rnet_sheffield = cycle_trips[zones_sheffield2, ] %>%
+  select(dutch_slc) %>%
+  plot(key.pos=1)
+```
+
+
+
+
+```{r}
+View(pct_regions_lookup)
+```
+
+
+```{r}
+desire = get_pct_lines(region = "south-yorkshire")
+```
+
+```{r}
+View(desire)
+```
+
+
+```{r}
+plot(desire["dutch_slc"])
+```
+
+
+```{r}
+desire_sheffield = desire %>%
+   filter(lad_name1 == "Sheffield")
+```
+
+```{r}
+plot(desire_sheffield)
+```
+
+```{r}
+View(desire_sheffield)
+```
+
+```{r}
+plot(desire_sheffield["bicycle"], key.pos=1,)
+```
+
+
+
